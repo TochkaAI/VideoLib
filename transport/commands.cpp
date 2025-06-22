@@ -23,9 +23,9 @@ REGISTRY_COMMAND_MULTIPROC(VideoSenderFrame,  "2cb8b7dc-4917-4d8e-8873-78a633ebd
 
 namespace data {
 
-bserial::RawVector VideoSenderStart::toRaw() const
+void VideoSenderStart::toRaw(bserial::DataStream& stream) const
 {
-    B_SERIALIZE_V1(stream)
+    B_SERIALIZE_V1
     stream << terminalId;
     stream << deviceIndex;
     stream << fps;
@@ -39,7 +39,7 @@ bserial::RawVector VideoSenderStart::toRaw() const
 
 void VideoSenderStart::fromRaw(const bserial::RawVector& vect)
 {
-    B_DESERIALIZE_V1(vect, stream)
+    B_DESERIALIZE_V1(vect)
     stream >> terminalId;
     stream >> deviceIndex;
     stream >> fps;
@@ -51,9 +51,9 @@ void VideoSenderStart::fromRaw(const bserial::RawVector& vect)
     B_DESERIALIZE_END
 }
 
-bserial::RawVector VideoSenderStop::toRaw() const
+void VideoSenderStop::toRaw(bserial::DataStream& stream) const
 {
-    B_SERIALIZE_V1(stream)
+    B_SERIALIZE_V1
     stream << terminalId;
     stream << deviceIndex;
     B_SERIALIZE_RETURN
@@ -61,15 +61,15 @@ bserial::RawVector VideoSenderStop::toRaw() const
 
 void VideoSenderStop::fromRaw(const bserial::RawVector& vect)
 {
-    B_DESERIALIZE_V1(vect, stream)
+    B_DESERIALIZE_V1(vect)
     stream >> terminalId;
     stream >> deviceIndex;
     B_DESERIALIZE_END
 }
 
-bserial::RawVector VideoStreamInfo::toRaw() const
+void VideoStreamInfo::toRaw(bserial::DataStream& stream) const
 {
-    B_SERIALIZE_V1(stream)
+    B_SERIALIZE_V1
     stream << deviceIndex;
     stream << frameNumber;
     stream << cvType;
@@ -85,7 +85,7 @@ bserial::RawVector VideoStreamInfo::toRaw() const
 
 void VideoStreamInfo::fromRaw(const bserial::RawVector& vect)
 {
-    B_DESERIALIZE_V1(vect, stream)
+    B_DESERIALIZE_V1(vect)
     stream >> deviceIndex;
     stream >> frameNumber;
     stream >> cvType;
@@ -99,23 +99,23 @@ void VideoStreamInfo::fromRaw(const bserial::RawVector& vect)
     B_DESERIALIZE_END
 }
 
-bserial::RawVector VideoSenderError::toRaw() const
+void VideoSenderError::toRaw(bserial::DataStream& stream) const
 {
-    B_SERIALIZE_V1(stream)
+    B_SERIALIZE_V1
     stream << deviceIndex;
     B_SERIALIZE_RETURN
 }
 
 void VideoSenderError::fromRaw(const bserial::RawVector& vect)
 {
-    B_DESERIALIZE_V1(vect, stream)
+    B_DESERIALIZE_V1(vect)
     stream >> deviceIndex;
     B_DESERIALIZE_END
 }
 
-bserial::RawVector FrameHeader::toRaw() const
+void FrameHeader::toRaw(bserial::DataStream& stream) const
 {
-    B_SERIALIZE_V1(stream)
+    B_SERIALIZE_V1
     stream << deviceIndex;
     stream << frameNumber;
     stream << cvType;
@@ -137,7 +137,7 @@ bserial::RawVector FrameHeader::toRaw() const
 
 void FrameHeader::fromRaw(const bserial::RawVector& vect)
 {
-    B_DESERIALIZE_V1(vect, stream)
+    B_DESERIALIZE_V1(vect)
     stream >> deviceIndex;
     stream >> frameNumber;
     stream >> cvType;
@@ -157,9 +157,9 @@ void FrameHeader::fromRaw(const bserial::RawVector& vect)
     B_DESERIALIZE_END
 }
 
-bserial::RawVector VideoSenderFrame::toRaw() const
+void VideoSenderFrame::toRaw(bserial::DataStream& stream) const
 {
-    B_SERIALIZE_V1(stream)
+    B_SERIALIZE_V1
     stream << frameHeader;
     stream << data;
     B_SERIALIZE_RETURN
@@ -167,7 +167,7 @@ bserial::RawVector VideoSenderFrame::toRaw() const
 
 void VideoSenderFrame::fromRaw(const bserial::RawVector& vect)
 {
-    B_DESERIALIZE_V1(vect, stream)
+    B_DESERIALIZE_V1(vect)
     stream >> frameHeader;
     stream >> data;
     B_DESERIALIZE_END
