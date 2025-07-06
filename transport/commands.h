@@ -12,6 +12,11 @@ namespace command {
 //----------------------------- Список команд --------------------------------
 
 /**
+  Команда информирует о том, что сокет используется для передачи видеопотока
+*/
+extern const QUuidEx VideoSenderSocket;
+
+/**
   Старт передачи видеопотока
 */
 extern const QUuidEx VideoSenderStart;
@@ -36,7 +41,7 @@ extern const QUuidEx VideoStreamInfo;
 extern const QUuidEx VideoFeedbackPort;
 
 /**
-  Отправляемый кадр
+  Команда для отправки кадра
 */
 extern const QUuidEx VideoSenderFrame;
 
