@@ -37,11 +37,10 @@ struct Frame : clife_base
     Mat data;      // Кадр в формате CaptureMode
     Mat dataGray;  // Кадр в формате CV_8UC1 (GRAY)
 
-    // Абстрактная структура, используется для передачи произвольных данных.
-    struct Something
+    // Абстрактная структура, используется для передачи произвольных данных
+    struct Something : clife_base
     {
-        typedef container_ptr<Something> Ptr;
-        virtual ~Something() {}
+        typedef clife_ptr<Something> Ptr;
     };
     Something::Ptr something;
 };
