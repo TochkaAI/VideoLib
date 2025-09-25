@@ -62,7 +62,6 @@ namespace data {
 struct VideoSenderStart : Data<&command::VideoSenderStart,
                                 Message::Type::Command>
 {
-
     // Сессионный идентификатор терминала (не используется при передаче
     // видеопотока через TCP-соединение)
     quint64 terminalId = {0};
@@ -81,8 +80,7 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
     // над frameScale
     quint16 sizeScale = {0};
 
-    // Параметр определяет значимую сторону (высота/ширина) масштабирования
-    // параметра sizeScale
+    // Определяет значимую сторону (высота/ширина) масштабирования для sizeScale
     SizeSide sizeSide = {SizeSide::Width};
 
     // Размер блока данных отправляемого в UDP-сокет. Оптимальный размер
@@ -102,6 +100,14 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
 
 #ifdef PPROTO_JSON_SERIALIZE
     J_SERIALIZE_BEGIN
+    #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
+        J_SERIALIZE_MAP_ITEM( "device_index" , deviceIndex )
+        J_SERIALIZE_MAP_OPT ( "fps"          , fps         )
+        J_SERIALIZE_MAP_OPT ( "frame_scale"  , frameScale  )
+        J_SERIALIZE_MAP_OPT ( "size_scale"   , sizeScale   )
+        J_SERIALIZE_MAP_OPT ( "size_side"    , sizeSide    )
+        J_SERIALIZE_MAP_OPT ( "compression"  , compression )
+    #elif
       //J_SERIALIZE_ITEM( terminalId  )
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_OPT ( fps         )
@@ -109,6 +115,7 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
         J_SERIALIZE_OPT ( sizeScale   )
         J_SERIALIZE_OPT ( sizeSide    )
         J_SERIALIZE_OPT ( compression )
+    #endif
     J_SERIALIZE_END
 #endif
 };
@@ -131,8 +138,13 @@ struct VideoSenderStop : Data<&command::VideoSenderStop,
 
 #ifdef PPROTO_JSON_SERIALIZE
     J_SERIALIZE_BEGIN
+    #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
+      //J_SERIALIZE_MAP_ITEM( "terminal_id"  , terminalId  )
+        J_SERIALIZE_MAP_ITEM( "device_index" , deviceIndex )
+    #elif
       //J_SERIALIZE_ITEM( terminalId  )
         J_SERIALIZE_ITEM( deviceIndex )
+    #endif
     J_SERIALIZE_END
 #endif
 };
@@ -171,6 +183,18 @@ struct VideoStreamInfo : Data<&command::VideoStreamInfo,
 
 #ifdef PPROTO_JSON_SERIALIZE
     J_SERIALIZE_BEGIN
+    #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
+        J_SERIALIZE_MAP_ITEM( "device_index" , deviceIndex )
+        J_SERIALIZE_MAP_ITEM( "frame_number" , frameNumber )
+        J_SERIALIZE_MAP_ITEM( "cv_type"      , cvType      )
+        J_SERIALIZE_MAP_ITEM( "real_width"   , realWidth   )
+        J_SERIALIZE_MAP_ITEM( "real_height"  , realHeight  )
+        J_SERIALIZE_MAP_ITEM( "scale"        , scale       )
+        J_SERIALIZE_MAP_ITEM( "scale_width"  , scaleWidth  )
+        J_SERIALIZE_MAP_ITEM( "scale_height" , scaleHeight )
+        J_SERIALIZE_MAP_ITEM( "fps"          , fps         )
+        J_SERIALIZE_MAP_ITEM( "real_fps"     , realFps     )
+    #elif
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_ITEM( frameNumber )
         J_SERIALIZE_ITEM( cvType      )
@@ -181,6 +205,7 @@ struct VideoStreamInfo : Data<&command::VideoStreamInfo,
         J_SERIALIZE_ITEM( scaleHeight )
         J_SERIALIZE_ITEM( fps         )
         J_SERIALIZE_ITEM( realFps     )
+    #endif
     J_SERIALIZE_END
 #endif
 };
@@ -199,8 +224,13 @@ struct VideoSenderError : MessageError
 
 #ifdef PPROTO_JSON_SERIALIZE
     J_SERIALIZE_BEGIN
+    #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
+        J_SERIALIZE_BASE( MessageError )
+        J_SERIALIZE_MAP_ITEM( "device_index" , deviceIndex )
+    #elif
         J_SERIALIZE_BASE( MessageError )
         J_SERIALIZE_ITEM( deviceIndex  )
+    #endif
     J_SERIALIZE_END
 #endif
 };
@@ -215,6 +245,24 @@ struct FrameHeader : video::transport::FrameHeaderBase
 
 #ifdef PPROTO_JSON_SERIALIZE
     J_SERIALIZE_BEGIN
+    #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
+        J_SERIALIZE_MAP_ITEM( "device_index" , deviceIndex )
+        J_SERIALIZE_MAP_ITEM( "frame_number" , frameNumber )
+        J_SERIALIZE_MAP_ITEM( "cv_type"      , cvType      )
+        J_SERIALIZE_MAP_ITEM( "real_width"   , realWidth   )
+        J_SERIALIZE_MAP_ITEM( "real_height"  , realHeight  )
+        J_SERIALIZE_MAP_ITEM( "real_step"    , realStep    )
+        J_SERIALIZE_MAP_ITEM( "scale"        , scale       )
+        J_SERIALIZE_MAP_ITEM( "scale_width"  , scaleWidth  )
+        J_SERIALIZE_MAP_ITEM( "scale_height" , scaleHeight )
+        J_SERIALIZE_MAP_ITEM( "scale_step"   , scaleStep   )
+        J_SERIALIZE_MAP_ITEM( "fps"          , fps         )
+        J_SERIALIZE_MAP_ITEM( "real_fps"     , realFps     )
+        J_SERIALIZE_MAP_ITEM( "chunk_count"  , chunkCount  )
+        J_SERIALIZE_MAP_ITEM( "chunk_step"   , chunkStep   )
+        J_SERIALIZE_MAP_ITEM( "data_size"    , dataSize    )
+        J_SERIALIZE_MAP_ITEM( "compress"     , compress    )
+    #elif
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_ITEM( frameNumber )
         J_SERIALIZE_ITEM( cvType      )
@@ -231,6 +279,8 @@ struct FrameHeader : video::transport::FrameHeaderBase
         J_SERIALIZE_ITEM( chunkStep   )
         J_SERIALIZE_ITEM( dataSize    )
         J_SERIALIZE_ITEM( compress    )
+
+    #endif
     J_SERIALIZE_END
 #endif
 };
@@ -239,7 +289,7 @@ struct VideoSenderFrame : Data<&command::VideoSenderFrame,
                                 Message::Type::Command>
 {
     FrameHeader frameHeader;
-    QByteArray  data;
+    SByteArray  data;
 
 #ifdef PPROTO_QBINARY_SERIALIZE
     DECLARE_B_SERIALIZE_FUNC
@@ -247,8 +297,13 @@ struct VideoSenderFrame : Data<&command::VideoSenderFrame,
 
 #ifdef PPROTO_JSON_SERIALIZE
     J_SERIALIZE_BEGIN
+    #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
+        J_SERIALIZE_MAP_ITEM( "frame_header" , frameHeader )
+        J_SERIALIZE_MAP_ITEM( "data"         , data        )
+    #elif
         J_SERIALIZE_ITEM( frameHeader )
         J_SERIALIZE_ITEM( data        )
+    #endif
     J_SERIALIZE_END
 #endif
 };
