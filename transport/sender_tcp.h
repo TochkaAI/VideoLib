@@ -36,12 +36,12 @@ class Sender : public QThreadEx
 {
 private:
     Sender(SendPool* sendPool) : _sendPool(sendPool) {}
-    bool init(quint8 deviceIndex, quint8 fps, quint8 frameScale,
-              quint16 widthScale, VideoFrameCompression compression);
+    bool init(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
+              pproto::SizeSide sizeSide, VideoFrameCompression compression);
 
     bool isFit(quint8 deviceIndex) const;
-    bool isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale,
-               quint16 widthScale, VideoFrameCompression compression) const;
+    bool isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
+               VideoFrameCompression compression) const;
 
     void addTerminal(pproto::transport::base::Socket::Ptr,
                      SerializeFormat messageContentFormat);
@@ -70,7 +70,8 @@ private:
     quint8  _deviceIndex = {0};
     quint8  _fps = {25};
     quint8  _frameScale = {100};
-    quint16 _widthScale = {0};
+    quint16 _sizeScale = {0};
+    pproto::SizeSide _sizeSide = {pproto::SizeSide::Width};
 
     // Признак сжатия кадра
     VideoFrameCompression _compression = {VideoFrameCompression::None};

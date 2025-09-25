@@ -34,7 +34,8 @@ void VideoSenderStart::toRaw(bserial::DataStream& stream) const
     stream << chunkStep;
     stream << compression;
     stream << sendPort;
-    stream << widthScale;
+    stream << sizeScale;
+    stream << sizeSide;
     B_SERIALIZE_RETURN
 }
 
@@ -48,7 +49,8 @@ void VideoSenderStart::fromRaw(const bserial::RawVector& vect)
     stream >> chunkStep;
     stream >> compression;
     stream >> sendPort;
-    stream >> widthScale;
+    stream >> sizeScale;
+    stream >> sizeSide;
     B_DESERIALIZE_END
 }
 

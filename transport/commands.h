@@ -47,11 +47,22 @@ extern const QUuidEx VideoSenderFrame;
 
 } // namespace command
 
+/**
+  Значимая сторона (высота/ширина) масштабирования для параметра
+  VideoSenderStart::sizeScale
+*/
+enum class SizeSide : quint32
+{
+    Height = 0,
+    Width  = 1
+};
+
 namespace data {
 
 struct VideoSenderStart : Data<&command::VideoSenderStart,
                                 Message::Type::Command>
 {
+
     // Сессионный идентификатор терминала (не используется при передаче
     // видеопотока через TCP-соединение)
     quint64 terminalId = {0};
@@ -66,9 +77,13 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
     // не будет масштабироваться
     quint8 frameScale = {100};
 
-    // Параметр  задает ширину масштабированного кадра, имеет приоритет
+    // Параметр задает (высоту/ширину) масштабированного кадра, имеет приоритет
     // над frameScale
-    quint16 widthScale  = {0};
+    quint16 sizeScale = {0};
+
+    // Параметр определяет значимую сторону (высота/ширина) масштабирования
+    // параметра sizeScale
+    SizeSide sizeSide = {SizeSide::Width};
 
     // Размер блока данных отправляемого в UDP-сокет. Оптимальный размер
     // блока для передачи по локальной сети 65456 байт
@@ -91,7 +106,8 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_OPT ( fps         )
         J_SERIALIZE_OPT ( frameScale  )
-        J_SERIALIZE_OPT ( widthScale  )
+        J_SERIALIZE_OPT ( sizeScale   )
+        J_SERIALIZE_OPT ( sizeSide    )
         J_SERIALIZE_OPT ( compression )
     J_SERIALIZE_END
 #endif

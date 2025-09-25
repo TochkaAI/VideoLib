@@ -28,24 +28,26 @@ namespace video::transport::tcp {
 
 using namespace std;
 
-bool Sender::init(quint8 deviceIndex, quint8 fps, quint8 frameScale,
-                  quint16 widthScale, VideoFrameCompression compression)
+bool Sender::init(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
+                  pproto::SizeSide sizeSide, VideoFrameCompression compression)
 {
     _deviceIndex = deviceIndex;
     _fps = fps;
     _frameScale = frameScale;
-    _widthScale = 0;
+    _sizeScale = 0;
+    _sizeSide = sizeSide;
     _compression = compression;
 
-    if (widthScale)
+    if (sizeScale)
     {
-        if (widthScale > 100)
+        if (sizeScale > 100)
         {
-            quint16 remainder = widthScale % 100;
-            _widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
+            quint16 remainder = sizeScale % 100;
+            //_widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
+            _sizeScale = sizeScale - remainder + (remainder > 50 ? 50 : 0);
         }
         else
-            _widthScale = 100;
+            _sizeScale = 100;
     }
     return true;
 }
@@ -55,25 +57,26 @@ bool Sender::isFit(quint8 deviceIndex) const
     return (_deviceIndex == deviceIndex);
 }
 
-bool Sender::isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale,
-                   quint16 widthScale, VideoFrameCompression compression) const
+bool Sender::isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
+                   VideoFrameCompression compression) const
 {
-    if (widthScale && _widthScale)
+    if (sizeScale && _sizeScale)
     {
-        if (widthScale > 100)
+        if (sizeScale > 100)
         {
-            quint16 remainder = widthScale % 100;
-            widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
+            quint16 remainder = sizeScale % 100;
+            //widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
+            sizeScale = sizeScale - remainder + (remainder > 50 ? 50 : 0);
         }
         else
-            widthScale = 100;
+            sizeScale = 100;
 
         return (_deviceIndex == deviceIndex
                 && _fps == fps
-                && _widthScale == widthScale
+                && _sizeScale == sizeScale
                 && _compression == compression);
     }
-    if (!widthScale && !_widthScale)
+    if (!sizeScale && !_sizeScale)
     {
         return (_deviceIndex == deviceIndex
                 && _fps == fps
@@ -198,10 +201,15 @@ void Sender::run()
                     << ". Device index: " << int(_deviceIndex)
                     << ". Fps: "          << int(_fps);
 
-        if (_widthScale)
-            logLine << ". Frame width: "  << int(_widthScale);
+        if (_sizeScale)
+        {
+            if (_sizeSide == pproto::SizeSide::Width)
+            logLine << ". Request frame width: "  << int(_sizeScale);
+            else
+            logLine << ". Request frame height: " << int(_sizeScale);
+        }
         else
-            logLine << ". Frame scale: "  << int(_frameScale) << "%";
+            logLine << ". Request frame scale: "  << int(_frameScale) << "%";
 
         logLine     << ". Compression: "  << toString(_compression);
     }
@@ -251,18 +259,17 @@ void Sender::run()
             videoStreamInfo.fps         = _fps;
             videoStreamInfo.realFps     = frame->fps;
 
-            if (_widthScale)
+            if (_sizeScale)
             {
-                float scale = float(_widthScale) / frame->width;
+                float scale;
+                if (_sizeSide == pproto::SizeSide::Width)
+                    scale = float(_sizeScale) / frame->width;
+                else
+                    scale = float(_sizeScale) / frame->height;
+
                 videoStreamInfo.scale = quint8(scale * 100);
                 videoStreamInfo.scaleWidth  = frame->width  * scale;
                 videoStreamInfo.scaleHeight = frame->height * scale;
-
-                if (videoStreamInfo.scaleWidth > frame->width)
-                {
-                    videoStreamInfo.scaleWidth  = frame->width;
-                    videoStreamInfo.scaleHeight = frame->height;
-                }
             }
             else if (_frameScale != 100)
             {
@@ -270,6 +277,26 @@ void Sender::run()
                 videoStreamInfo.scaleWidth  = frame->width  * scale;
                 videoStreamInfo.scaleHeight = frame->height * scale;
             }
+
+            bool greatScale = (_sizeSide == pproto::SizeSide::Width)
+                              ? (videoStreamInfo.scaleWidth  > frame->width)
+                              : (videoStreamInfo.scaleHeight > frame->height);
+            if (greatScale)
+            {
+                videoStreamInfo.scale = 100;
+                videoStreamInfo.scaleWidth  = frame->width;
+                videoStreamInfo.scaleHeight = frame->height;
+            }
+
+            if (_sizeScale)
+            {
+                if (_sizeSide == pproto::SizeSide::Width)
+                log_info_m << "Real send frame width: "  << int(_sizeScale);
+                else
+                log_info_m << "Real send frame height: " << int(_sizeScale);
+            }
+            else
+                log_info_m << "Real send frame scale: " << videoStreamInfo.scale << "%";
 
             if (!frame->data.empty())
                 videoStreamInfo.cvType = frame->data.type();
@@ -335,38 +362,41 @@ void Sender::run()
 
         cv::Mat resizeFrame;
 
-        if (_widthScale)
+        if (_sizeScale)
         {
-            float scale = float(_widthScale) / frame->width;
+            float scale;
+            if (_sizeSide == pproto::SizeSide::Width)
+                scale = float(_sizeScale) / frame->width;
+            else
+                scale = float(_sizeScale) / frame->height;
+
             frameHeader.scale = quint8(scale * 100);
             frameHeader.scaleWidth  = frame->width  * scale;
             frameHeader.scaleHeight = frame->height * scale;
-
-            if (frameHeader.scaleWidth > frame->width)
-            {
-                frameHeader.scaleWidth  = frame->width;
-                frameHeader.scaleHeight = frame->height;
-                resizeFrame = frame->data;
-            }
-            else
-            {
-                cv::Size size {frameHeader.scaleWidth, frameHeader.scaleHeight};
-                cv::resize(frame->data, resizeFrame, size);
-                frameHeader.scaleStep = resizeFrame.step;
-            }
         }
         else if (_frameScale != 100)
         {
             float scale = float(_frameScale) / 100;
             frameHeader.scaleWidth  = frame->width  * scale;
             frameHeader.scaleHeight = frame->height * scale;
+        }
 
+        bool greatScale = (_sizeSide == pproto::SizeSide::Width)
+                          ? (frameHeader.scaleWidth  > frame->width)
+                          : (frameHeader.scaleHeight > frame->height);
+        if (greatScale)
+        {
+            frameHeader.scale = 100;
+            frameHeader.scaleWidth  = frame->width;
+            frameHeader.scaleHeight = frame->height;
+            resizeFrame = frame->data;
+        }
+        else
+        {
             cv::Size size {frameHeader.scaleWidth, frameHeader.scaleHeight};
             cv::resize(frame->data, resizeFrame, size);
             frameHeader.scaleStep = resizeFrame.step;
         }
-        else
-            resizeFrame = frame->data;
 
         QByteArray frameBuff;
         std::vector<uchar> jpegBuff;
@@ -494,10 +524,15 @@ void Sender::run()
                     << ". Device index: " << int(_deviceIndex)
                     << ". Fps: "          << int(_fps);
 
-        if (_widthScale)
-            logLine << ". Frame width: "  << int(_widthScale);
+        if (_sizeScale)
+        {
+            if (_sizeSide == pproto::SizeSide::Width)
+            logLine << ". Request frame width: "  << int(_sizeScale);
+            else
+            logLine << ". Request frame height: " << int(_sizeScale);
+        }
         else
-            logLine << ". Frame scale: "  << int(_frameScale) << "%";
+            logLine << ". Request frame scale: "  << int(_frameScale) << "%";
 
         logLine     << ". Compression: "  << toString(_compression);
     }
@@ -542,7 +577,7 @@ void SendPool::message(const pproto::Message::Ptr& message)
             if (sender->isFit(videoSenderStart.deviceIndex,
                               videoSenderStart.fps,
                               videoSenderStart.frameScale,
-                              videoSenderStart.widthScale,
+                              videoSenderStart.sizeScale,
                               videoSenderStart.compression))
             {
                 found = true;
@@ -562,7 +597,8 @@ void SendPool::message(const pproto::Message::Ptr& message)
             sender->init(videoSenderStart.deviceIndex,
                          videoSenderStart.fps,
                          videoSenderStart.frameScale,
-                         videoSenderStart.widthScale,
+                         videoSenderStart.sizeScale,
+                         videoSenderStart.sizeSide,
                          videoSenderStart.compression);
 
             { //Block for alog::Line
@@ -571,10 +607,15 @@ void SendPool::message(const pproto::Message::Ptr& message)
                             << ". Device index: " << int(sender->_deviceIndex)
                             << ". Fps: "          << int(sender->_fps);
 
-                if (sender->_widthScale)
-                    logLine << ". Frame width: "  << int(sender->_widthScale);
+                if (sender->_sizeScale)
+                {
+                    if (sender->_sizeSide == pproto::SizeSide::Width)
+                    logLine << ". Request frame width: "  << int(sender->_sizeScale);
+                    else
+                    logLine << ". Request frame height: " << int(sender->_sizeScale);
+                }
                 else
-                    logLine << ". Frame scale: "  << int(sender->_frameScale) << "%";
+                    logLine << ". Request frame scale: "  << int(sender->_frameScale) << "%";
 
                 logLine     << ". Compression: "  << toString(sender->_compression);
             }
