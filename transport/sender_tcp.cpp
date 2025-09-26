@@ -2,7 +2,6 @@
 
 #include "shared/break_point.h"
 #include "shared/prog_abort.h"
-//#include "shared/spin_locker.h"
 #include "shared/logger/logger.h"
 #include "shared/logger/format.h"
 #include "shared/qt/logger_operators.h"
@@ -38,13 +37,33 @@ bool Sender::init(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 siz
     _sizeSide = sizeSide;
     _compression = compression;
 
+    { //Block for alog::Line
+        alog::Line logLine = log_info_m
+                    << "Sender init"
+                    << ". Device index: " << int(deviceIndex)
+                    << ". Fps: "          << int(fps);
+
+        if (sizeScale)
+        {
+            if (_sizeSide == pproto::SizeSide::Width)
+            logLine << ". Request frame width: "  << int(sizeScale);
+            else
+            logLine << ". Request frame height: " << int(sizeScale);
+        }
+        else
+            logLine << ". Request frame scale: "  << int(frameScale) << "%";
+
+        logLine     << ". Compression: "  << toString(compression);
+    }
+
     if (sizeScale)
     {
         if (sizeScale > 100)
         {
-            quint16 remainder = sizeScale % 100;
-            //_widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
-            _sizeScale = sizeScale - remainder + (remainder > 50 ? 50 : 0);
+            quint16 remainder = sizeScale % 50;
+          //_widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
+          //_sizeScale = sizeScale - remainder + (remainder > 50 ? 50 : 0);
+            _sizeScale = sizeScale - remainder;
         }
         else
             _sizeScale = 100;
@@ -64,9 +83,10 @@ bool Sender::isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 si
     {
         if (sizeScale > 100)
         {
-            quint16 remainder = sizeScale % 100;
-            //widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
-            sizeScale = sizeScale - remainder + (remainder > 50 ? 50 : 0);
+            quint16 remainder = sizeScale % 50;
+          //widthScale = widthScale - remainder + (remainder <= 50 ? 50 : 100);
+          //sizeScale = sizeScale - remainder + (remainder > 50 ? 50 : 0);
+            sizeScale = sizeScale - remainder;
         }
         else
             sizeScale = 100;
@@ -204,12 +224,12 @@ void Sender::run()
         if (_sizeScale)
         {
             if (_sizeSide == pproto::SizeSide::Width)
-            logLine << ". Request frame width: "  << int(_sizeScale);
+            logLine << ". Adjusted frame width: "  << int(_sizeScale);
             else
-            logLine << ". Request frame height: " << int(_sizeScale);
+            logLine << ". Adjusted frame height: " << int(_sizeScale);
         }
         else
-            logLine << ". Request frame scale: "  << int(_frameScale) << "%";
+            logLine << ". Adjusted frame scale: "  << int(_frameScale) << "%";
 
         logLine     << ". Compression: "  << toString(_compression);
     }
@@ -288,15 +308,15 @@ void Sender::run()
                 videoStreamInfo.scaleHeight = frame->height;
             }
 
-            if (_sizeScale)
-            {
-                if (_sizeSide == pproto::SizeSide::Width)
-                log_info_m << "Real send frame width: "  << int(_sizeScale);
-                else
-                log_info_m << "Real send frame height: " << int(_sizeScale);
-            }
-            else
-                log_info_m << "Real send frame scale: " << videoStreamInfo.scale << "%";
+//            if (_sizeScale)
+//            {
+//                if (_sizeSide == pproto::SizeSide::Width)
+//                log_info_m << "Real send frame width: "  << int(_sizeScale);
+//                else
+//                log_info_m << "Real send frame height: " << int(_sizeScale);
+//            }
+//            else
+//                log_info_m << "Real send frame scale: " << videoStreamInfo.scale << "%";
 
             if (!frame->data.empty())
                 videoStreamInfo.cvType = frame->data.type();
@@ -527,12 +547,12 @@ void Sender::run()
         if (_sizeScale)
         {
             if (_sizeSide == pproto::SizeSide::Width)
-            logLine << ". Request frame width: "  << int(_sizeScale);
+            logLine << ". Adjusted frame width: "  << int(_sizeScale);
             else
-            logLine << ". Request frame height: " << int(_sizeScale);
+            logLine << ". Adjusted frame height: " << int(_sizeScale);
         }
         else
-            logLine << ". Request frame scale: "  << int(_frameScale) << "%";
+            logLine << ". Adjusted frame scale: "  << int(_frameScale) << "%";
 
         logLine     << ". Compression: "  << toString(_compression);
     }
@@ -610,12 +630,12 @@ void SendPool::message(const pproto::Message::Ptr& message)
                 if (sender->_sizeScale)
                 {
                     if (sender->_sizeSide == pproto::SizeSide::Width)
-                    logLine << ". Request frame width: "  << int(sender->_sizeScale);
+                    logLine << ". Adjusted frame width: "  << int(sender->_sizeScale);
                     else
-                    logLine << ". Request frame height: " << int(sender->_sizeScale);
+                    logLine << ". Adjusted frame height: " << int(sender->_sizeScale);
                 }
                 else
-                    logLine << ". Request frame scale: "  << int(sender->_frameScale) << "%";
+                    logLine << ". Adjusted frame scale: "  << int(sender->_frameScale) << "%";
 
                 logLine     << ". Compression: "  << toString(sender->_compression);
             }
