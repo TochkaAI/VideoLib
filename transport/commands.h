@@ -107,7 +107,7 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
         J_SERIALIZE_MAP_OPT ( "size_scale"   , sizeScale   )
         J_SERIALIZE_MAP_OPT ( "size_side"    , sizeSide    )
         J_SERIALIZE_MAP_OPT ( "compression"  , compression )
-    #elif
+    #else
       //J_SERIALIZE_ITEM( terminalId  )
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_OPT ( fps         )
@@ -141,7 +141,7 @@ struct VideoSenderStop : Data<&command::VideoSenderStop,
     #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
       //J_SERIALIZE_MAP_ITEM( "terminal_id"  , terminalId  )
         J_SERIALIZE_MAP_ITEM( "device_index" , deviceIndex )
-    #elif
+    #else
       //J_SERIALIZE_ITEM( terminalId  )
         J_SERIALIZE_ITEM( deviceIndex )
     #endif
@@ -194,7 +194,7 @@ struct VideoStreamInfo : Data<&command::VideoStreamInfo,
         J_SERIALIZE_MAP_ITEM( "scale_height" , scaleHeight )
         J_SERIALIZE_MAP_ITEM( "fps"          , fps         )
         J_SERIALIZE_MAP_ITEM( "real_fps"     , realFps     )
-    #elif
+    #else
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_ITEM( frameNumber )
         J_SERIALIZE_ITEM( cvType      )
@@ -227,7 +227,7 @@ struct VideoSenderError : MessageError
     #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
         J_SERIALIZE_BASE( MessageError )
         J_SERIALIZE_MAP_ITEM( "device_index" , deviceIndex )
-    #elif
+    #else
         J_SERIALIZE_BASE( MessageError )
         J_SERIALIZE_ITEM( deviceIndex  )
     #endif
@@ -262,7 +262,7 @@ struct FrameHeader : video::transport::FrameHeaderBase
         J_SERIALIZE_MAP_ITEM( "chunk_step"   , chunkStep   )
         J_SERIALIZE_MAP_ITEM( "data_size"    , dataSize    )
         J_SERIALIZE_MAP_ITEM( "compress"     , compress    )
-    #elif
+    #else
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_ITEM( frameNumber )
         J_SERIALIZE_ITEM( cvType      )
@@ -279,7 +279,6 @@ struct FrameHeader : video::transport::FrameHeaderBase
         J_SERIALIZE_ITEM( chunkStep   )
         J_SERIALIZE_ITEM( dataSize    )
         J_SERIALIZE_ITEM( compress    )
-
     #endif
     J_SERIALIZE_END
 #endif
@@ -300,7 +299,7 @@ struct VideoSenderFrame : Data<&command::VideoSenderFrame,
     #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
         J_SERIALIZE_MAP_ITEM( "frame_header" , frameHeader )
         J_SERIALIZE_MAP_ITEM( "data"         , data        )
-    #elif
+    #else
         J_SERIALIZE_ITEM( frameHeader )
         J_SERIALIZE_ITEM( data        )
     #endif
