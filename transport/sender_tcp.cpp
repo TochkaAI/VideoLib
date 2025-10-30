@@ -506,6 +506,7 @@ void Sender::run()
             {
                 data::VideoSenderFrame videoSenderFrame;
                 videoSenderFrame.frameHeader = frameHeader;
+                videoSenderFrame.captureTime = frame->time;
 
                 // Отправляем кадр
                 if (t->messageContentFormat == SerializeFormat::QBinary)

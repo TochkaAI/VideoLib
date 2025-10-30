@@ -6,6 +6,8 @@
 #include "pproto/commands/base.h"
 #include "pproto/serialize/qbinary.h"
 
+#include "pproto/commands/time_spec.h"
+
 namespace pproto {
 namespace command {
 
@@ -288,6 +290,7 @@ struct VideoSenderFrame : Data<&command::VideoSenderFrame,
                                 Message::Type::Command>
 {
     FrameHeader frameHeader;
+    TimeSpec    captureTime;
     SByteArray  data;
 
 #ifdef PPROTO_QBINARY_SERIALIZE
@@ -299,9 +302,11 @@ struct VideoSenderFrame : Data<&command::VideoSenderFrame,
     #ifdef PPROTO_MESSAGE_NEW_JSON_FORMAT
         J_SERIALIZE_MAP_ITEM( "frame_header" , frameHeader )
         J_SERIALIZE_MAP_ITEM( "data"         , data        )
+        J_SERIALIZE_MAP_ITEM( "capture_time" , captureTime )
     #else
         J_SERIALIZE_ITEM( frameHeader )
         J_SERIALIZE_ITEM( data        )
+        J_SERIALIZE_ITEM( captureTime )
     #endif
     J_SERIALIZE_END
 #endif

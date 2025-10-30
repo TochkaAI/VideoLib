@@ -165,6 +165,7 @@ void VideoSenderFrame::toRaw(bserial::DataStream& stream) const
     B_SERIALIZE_V1
     stream << frameHeader;
     stream << data;
+    stream << captureTime;
     B_SERIALIZE_RETURN
 }
 
@@ -173,6 +174,7 @@ void VideoSenderFrame::fromRaw(const bserial::RawVector& vect)
     B_DESERIALIZE_V1(vect)
     stream >> frameHeader;
     stream >> data;
+    stream >> captureTime;
     B_DESERIALIZE_END
 }
 } // namespace data
