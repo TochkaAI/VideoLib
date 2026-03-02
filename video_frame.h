@@ -5,7 +5,6 @@
 #include "shared/clife_base.h"
 #include "shared/clife_ptr.h"
 #include "shared/clife_alloc.h"
-#include "shared/container_ptr.h"
 
 #include <opencv2/opencv.hpp>
 #include <QtCore>
@@ -27,6 +26,8 @@ struct Frame : clife_base
     double   height = {0};    // Высота кадра
     double   fps    = {0};    // FPS видеопотока
     quint64  number = quint64(-1); // Номер кадра
+
+    Coordinates::Ptr coordinates;
 
     Source source = {Source::Unknown};
     CaptureMode captureMode = {CaptureMode::BGR};

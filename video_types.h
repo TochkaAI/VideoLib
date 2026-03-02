@@ -1,5 +1,7 @@
 #pragma once
 
+#include "shared/clife_base.h"
+#include "shared/clife_ptr.h"
 #include <QtGlobal>
 
 namespace video {
@@ -21,6 +23,21 @@ enum class CaptureMode : quint32
     RGB  = 1,
     YUYV = 2,
     GRAY = 3
+};
+
+// Координаты камеры
+struct Coordinates : clife_base
+{
+    typedef clife_ptr<Coordinates> Ptr;
+
+    float x     = {0};
+    float y     = {0};
+    float z     = {0};
+    float alpha = {0};
+    float beta  = {0};
+    float gamma = {0};
+
+    timespec time = {0, 0}; // Время получения координат (UTC)
 };
 
 inline const char* toString(CaptureMode mode)
