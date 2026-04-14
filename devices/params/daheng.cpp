@@ -233,7 +233,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
 
         initParam(this->saturationMode);
         LOG_LOAD_PARAM(saturationMode)
-        this->requireFpsLimit->value = stringToEnum(saturationMode, GX_ACQUISITION_FRAME_RATE_MODE_OFF);
+        this->saturationMode->value = stringToEnum(saturationMode, GX_ENUM_SATURATION_OFF);
     }
 
     int64_t saturation;
