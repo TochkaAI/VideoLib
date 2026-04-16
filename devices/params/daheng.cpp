@@ -2,12 +2,19 @@
 
 #include "shared/utils.h"
 
-#define log_error_m   alog::logger().error   (alog_line_location, "DevParam")
-#define log_warn_m    alog::logger().warn    (alog_line_location, "DevParam")
-#define log_info_m    alog::logger().info    (alog_line_location, "DevParam")
-#define log_verbose_m alog::logger().verbose (alog_line_location, "DevParam")
-#define log_debug_m   alog::logger().debug   (alog_line_location, "DevParam")
-#define log_debug2_m  alog::logger().debug2  (alog_line_location, "DevParam")
+#define log_error_macros(LOG_LINE)   alog::logger().error   (alog_line_(LOG_LINE), "DevParam")
+#define log_warn_macros(LOG_LINE)    alog::logger().warn    (alog_line_(LOG_LINE), "DevParam")
+#define log_info_macros(LOG_LINE)    alog::logger().info    (alog_line_(LOG_LINE), "DevParam")
+#define log_verbose_macros(LOG_LINE) alog::logger().verbose (alog_line_(LOG_LINE), "DevParam")
+#define log_debug_macros(LOG_LINE)   alog::logger().debug   (alog_line_(LOG_LINE), "DevParam")
+#define log_debug2_macros(LOG_LINE)  alog::logger().debug2  (alog_line_(LOG_LINE), "DevParam")
+
+#define log_error_m   log_error_macros   (__LINE__)
+#define log_warn_m    log_warn_macros    (__LINE__)
+#define log_info_m    log_info_macros    (__LINE__)
+#define log_verbose_m log_verbose_macros (__LINE__)
+#define log_debug_m   log_debug_macros   (__LINE__)
+#define log_debug2_m  log_debug2_macros  (__LINE__)
 
 namespace video::device::param {
 
@@ -147,14 +154,15 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
         return false;
     };
 
-    #define LOG_LOAD_PARAM(PARAM) \
-        log_verbose_m << log_format("Load dynamic param %?: %?", \
-                                    fullParamName, PARAM);
+    #define LOG_LOAD_PARAM(PARAM, LOG_LINE) \
+        log_verbose_macros(LOG_LINE) << log_format( \
+            "Load dynamic param %?: %?", fullParamName, PARAM);
+
     string exposureAuto;
     if (getParam("exposure_auto", exposureAuto))
     {
         initParam(this->exposureAuto);
-        LOG_LOAD_PARAM(exposureAuto)
+        LOG_LOAD_PARAM(exposureAuto, __LINE__)
         this->exposureAuto->value = stringToEnum(exposureAuto, GX_EXPOSURE_AUTO_OFF);
     }
 
@@ -162,7 +170,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("exposure_time", exposureTime))
     {
         initParam(this->exposureTime);
-        LOG_LOAD_PARAM(exposureTime)
+        LOG_LOAD_PARAM(exposureTime, __LINE__)
         this->exposureTime->value = exposureTime;
     }
 
@@ -173,7 +181,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
             requireFpsLimit = "on";
 
         initParam(this->requireFpsLimit);
-        LOG_LOAD_PARAM(requireFpsLimit)
+        LOG_LOAD_PARAM(requireFpsLimit, __LINE__)
         this->requireFpsLimit->value = stringToEnum(requireFpsLimit, GX_ACQUISITION_FRAME_RATE_MODE_OFF);
     }
 
@@ -181,7 +189,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("fps_limit", fpsLimit))
     {
         initParam(this->fpsLimit);
-        LOG_LOAD_PARAM(fpsLimit)
+        LOG_LOAD_PARAM(fpsLimit, __LINE__)
         this->fpsLimit->value = fpsLimit;
     }
 
@@ -189,7 +197,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("gain", gain))
     {
         initParam(this->gain);
-        LOG_LOAD_PARAM(gain)
+        LOG_LOAD_PARAM(gain, __LINE__)
         this->gain->value = gain;
     }
 
@@ -197,7 +205,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("gain_auto", gainAuto))
     {
         initParam(this->gainAuto);
-        LOG_LOAD_PARAM(gainAuto)
+        LOG_LOAD_PARAM(gainAuto, __LINE__)
         this->gainAuto->value = stringToEnum(gainAuto, GX_GAIN_AUTO_OFF);
     }
 
@@ -205,7 +213,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("gain_auto_min", gainAutoMin))
     {
         initParam(this->gainAutoMin);
-        LOG_LOAD_PARAM(gainAutoMin)
+        LOG_LOAD_PARAM(gainAutoMin, __LINE__)
         this->gainAutoMin->value = gainAutoMin;
     }
 
@@ -213,7 +221,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("gain_auto_max", gainAutoMax))
     {
         initParam(this->gainAutoMax);
-        LOG_LOAD_PARAM(gainAutoMax)
+        LOG_LOAD_PARAM(gainAutoMax, __LINE__)
         this->gainAutoMax->value = gainAutoMax;
     }
 
@@ -221,7 +229,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("balance_white_auto", balanceWhiteAuto))
     {
         initParam(this->balanceWhiteAuto);
-        LOG_LOAD_PARAM(balanceWhiteAuto)
+        LOG_LOAD_PARAM(balanceWhiteAuto, __LINE__)
         this->balanceWhiteAuto->value = stringToEnum(balanceWhiteAuto, GX_BALANCE_WHITE_AUTO_OFF);
     }
 
@@ -232,7 +240,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
             saturationMode = "on";
 
         initParam(this->saturationMode);
-        LOG_LOAD_PARAM(saturationMode)
+        LOG_LOAD_PARAM(saturationMode, __LINE__)
         this->saturationMode->value = stringToEnum(saturationMode, GX_ENUM_SATURATION_OFF);
     }
 
@@ -240,7 +248,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("saturation", saturation))
     {
         initParam(this->saturation);
-        LOG_LOAD_PARAM(saturation)
+        LOG_LOAD_PARAM(saturation, __LINE__)
         this->saturation->value = saturation;
     }
 
@@ -248,7 +256,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("light_source_preset", lightSourcePreset))
     {
         initParam(this->lightSourcePreset);
-        LOG_LOAD_PARAM(lightSourcePreset)
+        LOG_LOAD_PARAM(lightSourcePreset, __LINE__)
         this->lightSourcePreset->value = stringToEnum(lightSourcePreset, GX_LIGHT_SOURCE_PRESET_OFF);
     }    
 
@@ -256,7 +264,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("user_output_selector", userOutputSelector))
     {
         initParam(this->userOutputSelector);
-        LOG_LOAD_PARAM(userOutputSelector)
+        LOG_LOAD_PARAM(userOutputSelector, __LINE__)
         this->userOutputSelector->value = stringToEnum(userOutputSelector, GX_USER_OUTPUT_SELECTOR_OUTPUT0);
     }
 
@@ -264,7 +272,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("user_output_value", userOutputValue))
     {
         initParam(this->userOutputValue);
-        LOG_LOAD_PARAM(userOutputValue)
+        LOG_LOAD_PARAM(userOutputValue, __LINE__)
         this->userOutputValue->value = userOutputValue;
     }
 
@@ -272,7 +280,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("line_selector", lineSelector))
     {
         initParam(this->lineSelector);
-        LOG_LOAD_PARAM(lineSelector)
+        LOG_LOAD_PARAM(lineSelector, __LINE__)
         this->lineSelector->value = stringToEnum(lineSelector, GX_ENUM_LINE_SELECTOR_LINE0);
     }
 
@@ -280,7 +288,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("line_mode", lineMode))
     {
         initParam(this->lineMode);
-        LOG_LOAD_PARAM(lineMode)
+        LOG_LOAD_PARAM(lineMode, __LINE__)
         this->lineMode->value = stringToEnum(lineMode, GX_ENUM_LINE_MODE_INPUT);
     }
 
@@ -288,7 +296,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("line_inverter", lineInverter))
     {
         initParam(this->lineInverter);
-        LOG_LOAD_PARAM(lineInverter)
+        LOG_LOAD_PARAM(lineInverter, __LINE__)
         this->lineInverter->value = lineInverter;
     }
 
@@ -296,7 +304,7 @@ bool Daheng::load(int deviceIndex, const yaml::Config& config)
     if (getParam("line_source", lineSource))
     {
         initParam(this->lineSource);
-        LOG_LOAD_PARAM(lineSource)
+        LOG_LOAD_PARAM(lineSource, __LINE__)
         this->lineSource->value = stringToEnum(lineSource, GX_ENUM_LINE_SOURCE_OFF);
     }
 
