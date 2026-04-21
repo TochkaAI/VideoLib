@@ -461,8 +461,13 @@ Dynamic::Ptr Daheng::clone() const
     if (lineInverter)       p->lineInverter       = lineInverter->clone();
     if (lineSource)         p->lineSource         = lineSource->clone();
 
-    p->currentFps = currentFps;
-    p->pixelDepth = pixelDepth;
+    //--- Параметры только для чтения ---
+    if (currentFps)         p->currentFps         = currentFps->clone();
+    if (pixelDepth)         p->pixelDepth         = pixelDepth->clone();
+    if (packetSize)         p->packetSize         = packetSize->clone();
+    if (packetDelay)        p->packetDelay        = packetDelay->clone();
+    if (estimatedBandwidth) p->estimatedBandwidth = estimatedBandwidth->clone();
+
     return p;
 }
 
@@ -491,6 +496,9 @@ void Daheng::toRaw(bserial::DataStream& stream) const
     stream << lineMode;
     stream << lineInverter;
     stream << lineSource;
+    stream << packetSize;
+    stream << packetDelay;
+    stream << estimatedBandwidth;
     B_SERIALIZE_RETURN
 }
 
@@ -518,6 +526,9 @@ void Daheng::fromRaw(const bserial::RawVector& vect)
     stream >> lineMode;
     stream >> lineInverter;
     stream >> lineSource;
+    stream >> packetSize;
+    stream >> packetDelay;
+    stream >> estimatedBandwidth;
     B_DESERIALIZE_END
 }
 #endif

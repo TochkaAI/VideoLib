@@ -82,9 +82,12 @@ struct EnumInfo : clife_base
   быть описана внутри дополнительного пространства имен, в данном случае
   в 'namespace detail'
 */
-template<typename U> struct Param : clife_base
+template<typename U, bool RO = false> struct Param : clife_base
 {
     typedef clife_ptr<Param<U>> Ptr;
+
+    Param () = default;
+    DISABLE_DEFAULT_COPY(Param)
 
     Status status = {Status::Unknown};
 
@@ -99,6 +102,9 @@ template<typename U> struct Param : clife_base
 
     // Информация о перечисляемом типе
     EnumInfo::Ptr enumInfo;
+
+    // Признак параметра "только для чтения"
+    const bool readOnly = {RO};
 
     Ptr clone() const
     {

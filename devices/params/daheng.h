@@ -18,6 +18,7 @@
 namespace video::device::param {
 
 using namespace std;
+#define READ_ONLY true
 
 /**
    Структура содержит динамические параметры для камеры Daheng
@@ -91,12 +92,22 @@ struct Daheng : Dynamic
     // будет выводиться на выбранную линию
     detail::Param<GX_LINE_SOURCE_ENTRY>::Ptr lineSource;
 
-    // Текущее значение fps. Параметр доступен только для чтения
-    double currentFps = {0};
+    //--- Параметры только для чтения ---
 
-    // Текущее значение глубины пикселя. Может принимать значения 8, 16.
-    // Параметр доступен только для чтения
-    int pixelDepth = {8};
+    // Текущее значение fps
+    detail::Param<double, READ_ONLY>::Ptr currentFps;
+
+    // Текущее значение глубины пикселя. Может принимать значения 8, 16
+    detail::Param<qint8, READ_ONLY>::Ptr pixelDepth;
+
+    // Текущий размер GEV пакета, синоним MTU (только для GigE камер)
+    detail::Param<qint64, READ_ONLY>::Ptr packetSize;
+
+    // Текущая межпакетная задержка GEV (GevSCPD, только для GigE камер)
+    detail::Param<qint64, READ_ONLY>::Ptr packetDelay;
+
+    // Оценочная пропускная способность потока от камеры (только для GigE камер)
+    detail::Param<qint64, READ_ONLY>::Ptr estimatedBandwidth;
 
     bool load(int deviceIndex, const yaml::Config&) override;
     bool save(int deviceIndex, yaml::Config&, std::string = {}) override;
@@ -148,9 +159,14 @@ struct Daheng : Dynamic
         J_SERIALIZE_MAP_OPT( "line_source"          , lineSource         )
         J_SERIALIZE_MAP_OPT( "current_fps"          , currentFps         )
         J_SERIALIZE_MAP_OPT( "pixel_depth"          , pixelDepth         )
+        J_SERIALIZE_MAP_OPT( "packet_size"          , packetSize         )
+        J_SERIALIZE_MAP_OPT( "packet_delay"         , packetDelay        )
+        J_SERIALIZE_MAP_OPT( "estimated_bandwidth"  , estimatedBandwidth )
     J_SERIALIZE_END
 #endif
 };
+
+#undef READ_ONLY
 
 template<typename EnumType>
 const char* Daheng::enumToString(EnumType value)
