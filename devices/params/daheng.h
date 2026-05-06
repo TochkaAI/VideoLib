@@ -18,7 +18,6 @@
 namespace video::device::param {
 
 using namespace std;
-#define READ_ONLY true
 
 /**
    Структура содержит динамические параметры для камеры Daheng
@@ -92,22 +91,24 @@ struct Daheng : Dynamic
     // будет выводиться на выбранную линию
     detail::Param<GX_LINE_SOURCE_ENTRY>::Ptr lineSource;
 
+    enum {ReadOnly = true};
+
     //--- Параметры только для чтения ---
 
     // Текущее значение fps
-    detail::Param<double, READ_ONLY>::Ptr currentFps;
+    detail::Param<double, ReadOnly>::Ptr currentFps;
 
     // Текущее значение глубины пикселя. Может принимать значения 8, 16
-    detail::Param<qint8, READ_ONLY>::Ptr pixelDepth;
+    detail::Param<qint8, ReadOnly>::Ptr pixelDepth;
 
     // Текущий размер GEV пакета, синоним MTU (только для GigE камер)
-    detail::Param<qint64, READ_ONLY>::Ptr packetSize;
+    detail::Param<qint64, ReadOnly>::Ptr packetSize;
 
     // Текущая межпакетная задержка GEV (GevSCPD, только для GigE камер)
-    detail::Param<qint64, READ_ONLY>::Ptr packetDelay;
+    detail::Param<qint64, ReadOnly>::Ptr packetDelay;
 
     // Оценочная пропускная способность потока от камеры (только для GigE камер)
-    detail::Param<qint64, READ_ONLY>::Ptr estimatedBandwidth;
+    detail::Param<qint64, ReadOnly>::Ptr estimatedBandwidth;
 
     bool load(int deviceIndex, const yaml::Config&) override;
     bool save(int deviceIndex, yaml::Config&, std::string = {}) override;
@@ -165,8 +166,6 @@ struct Daheng : Dynamic
     J_SERIALIZE_END
 #endif
 };
-
-#undef READ_ONLY
 
 template<typename EnumType>
 const char* Daheng::enumToString(EnumType value)
