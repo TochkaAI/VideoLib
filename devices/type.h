@@ -39,7 +39,8 @@ namespace alog {
 
 inline Line& operator<< (Line& line, video::device::Type t)
 {
-    line << video::device::toString(t);
+    if (line.toLogger())
+        line << video::device::toString(t);
     return line;
 }
 
