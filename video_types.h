@@ -30,12 +30,12 @@ struct Coordinates : clife_base
 {
     typedef clife_ptr<Coordinates> Ptr;
 
-    float x     = {0};
-    float y     = {0};
-    float z     = {0};
-    float alpha = {0};
-    float beta  = {0};
-    float gamma = {0};
+    double x  = {0}; // Координата по оси  X (в метрах)
+    double y  = {0}; // Координата по оси  Y (в метрах)
+    double z  = {0}; // Координата по оси  Z (в метрах)
+    double rx = {0}; // Поворот вокруг оси X (в радианах)
+    double ry = {0}; // Поворот вокруг оси Y (в радианах)
+    double rz = {0}; // Поворот вокруг оси Z (в радианах)
 
     timespec time = {0, 0}; // Время получения координат (UTC)
 };
