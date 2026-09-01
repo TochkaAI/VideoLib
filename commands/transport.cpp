@@ -65,6 +65,8 @@ void VideoSenderStart::toRaw(bserial::DataStream& stream) const
     stream << sendPort;
     stream << sizeScale;
     stream << sizeSide;
+  //B_SERIALIZE_V2
+    stream << frameOrigin;
     B_SERIALIZE_RETURN
 }
 
@@ -80,6 +82,8 @@ void VideoSenderStart::fromRaw(const bserial::RawVector& vect)
     stream >> sendPort;
     stream >> sizeScale;
     stream >> sizeSide;
+  //B_DESERIALIZE_V2(vect)
+    stream >> frameOrigin;
     B_DESERIALIZE_END
 }
 
@@ -112,6 +116,7 @@ void VideoStreamInfo::toRaw(bserial::DataStream& stream) const
     stream << scaleHeight;
     stream << fps;
     stream << realFps;
+    stream << frameOrigin;
     B_SERIALIZE_RETURN
 }
 
@@ -128,6 +133,7 @@ void VideoStreamInfo::fromRaw(const bserial::RawVector& vect)
     stream >> scaleHeight;
     stream >> fps;
     stream >> realFps;
+    stream >> frameOrigin;
     B_DESERIALIZE_END
 }
 
@@ -164,6 +170,7 @@ void FrameHeader::toRaw(bserial::DataStream& stream) const
     stream << chunkStep;
     stream << dataSize;
     stream << compress;
+    stream << frameOrigin;
     B_SERIALIZE_RETURN
 }
 
@@ -186,6 +193,7 @@ void FrameHeader::fromRaw(const bserial::RawVector& vect)
     stream >> chunkStep;
     stream >> dataSize;
     stream >> compress;
+    stream >> frameOrigin;
     B_DESERIALIZE_END
 }
 

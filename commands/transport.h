@@ -120,6 +120,11 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
     // IP-адрес терминала можно получить из входящего UDP-сообщения
     quint16 sendPort = {0};
 
+    // Признак определяет из какого поля видеоданных формируется  видеопоток.
+    // Значение TRUE соответствует полю video::Frame::origin, значение FALSE
+    // соответствует video::Frame::data
+    bool frameOrigin = {true};
+
 #ifdef PPROTO_QBINARY_SERIALIZE
     DECLARE_B_SERIALIZE_FUNC
 #endif
@@ -133,6 +138,7 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
         J_SERIALIZE_MAP_OPT ( "size_scale"   , sizeScale   )
         J_SERIALIZE_MAP_OPT ( "size_side"    , sizeSide    )
         J_SERIALIZE_MAP_OPT ( "compression"  , compression )
+        J_SERIALIZE_MAP_OPT ( "frame_origin" , frameOrigin )
     #else
       //J_SERIALIZE_ITEM( terminalId  )
         J_SERIALIZE_ITEM( deviceIndex )
@@ -141,6 +147,7 @@ struct VideoSenderStart : Data<&command::VideoSenderStart,
         J_SERIALIZE_OPT ( sizeScale   )
         J_SERIALIZE_OPT ( sizeSide    )
         J_SERIALIZE_OPT ( compression )
+        J_SERIALIZE_OPT ( frameOrigin  )
     #endif
     J_SERIALIZE_END
 #endif
@@ -203,6 +210,11 @@ struct VideoStreamInfo : Data<&command::VideoStreamInfo,
     quint8 fps = {25};
     quint8 realFps = {25};
 
+    // Признак определяет из какого поля видеоданных формируется  видеопоток.
+    // Значение TRUE соответствует полю video::Frame::origin, значение FALSE
+    // соответствует video::Frame::data
+    bool frameOrigin = {true};
+
 #ifdef PPROTO_QBINARY_SERIALIZE
     DECLARE_B_SERIALIZE_FUNC
 #endif
@@ -220,6 +232,7 @@ struct VideoStreamInfo : Data<&command::VideoStreamInfo,
         J_SERIALIZE_MAP_ITEM( "scale_height" , scaleHeight )
         J_SERIALIZE_MAP_ITEM( "fps"          , fps         )
         J_SERIALIZE_MAP_ITEM( "real_fps"     , realFps     )
+        J_SERIALIZE_MAP_ITEM( "frame_origin" , frameOrigin )
     #else
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_ITEM( frameNumber )
@@ -231,6 +244,7 @@ struct VideoStreamInfo : Data<&command::VideoStreamInfo,
         J_SERIALIZE_ITEM( scaleHeight )
         J_SERIALIZE_ITEM( fps         )
         J_SERIALIZE_ITEM( realFps     )
+        J_SERIALIZE_ITEM( frameOrigin )
     #endif
     J_SERIALIZE_END
 #endif
@@ -288,6 +302,7 @@ struct FrameHeader : video::transport::FrameHeaderBase
         J_SERIALIZE_MAP_ITEM( "chunk_step"   , chunkStep   )
         J_SERIALIZE_MAP_ITEM( "data_size"    , dataSize    )
         J_SERIALIZE_MAP_ITEM( "compress"     , compress    )
+        J_SERIALIZE_MAP_ITEM( "frame_origin" , frameOrigin )
     #else
         J_SERIALIZE_ITEM( deviceIndex )
         J_SERIALIZE_ITEM( frameNumber )
@@ -305,6 +320,7 @@ struct FrameHeader : video::transport::FrameHeaderBase
         J_SERIALIZE_ITEM( chunkStep   )
         J_SERIALIZE_ITEM( dataSize    )
         J_SERIALIZE_ITEM( compress    )
+        J_SERIALIZE_ITEM( frameOrigin )
     #endif
     J_SERIALIZE_END
 #endif

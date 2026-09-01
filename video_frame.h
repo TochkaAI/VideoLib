@@ -54,16 +54,29 @@ struct Frame : clife_base
     double   fps    = {0};    // FPS видеопотока
     quint64  number = quint64(-1); // Номер кадра
 
+    // Координаты камеры
     Coordinates::Ptr coordinates;
 
+    // Источнк видеоданных
     Source source = {Source::Unknown};
+
+    // Цветовой формат видеоданных
     CaptureMode captureMode = {CaptureMode::BGR};
 
     // Глубина пикселя. Может принимать значения 8, 16
     int pixelDepth = {8};
 
-    Mat data;      // Кадр в формате CaptureMode
-    Mat dataGray;  // Кадр в формате CV_8UC1 (GRAY)
+    // Оригинальный кадр в формате CaptureMode. Примечание: оригинальный кадр
+    // может быть изменен  в результате  применения  базовой  предварительной
+    // обработки
+    Mat origin;
+
+    // Поле может содержать как оригинальный кадр, так и кадр измененный в ре-
+    // зультате применения расширенной предварительной обработки
+    Mat data;
+
+    // [Deprecated] Кадр в формате CV_8UC1 (GRAY)
+    // Mat dataGray;
 
     // Абстрактная структура, используется для передачи произвольных данных
     struct Something : clife_base

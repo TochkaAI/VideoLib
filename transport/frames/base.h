@@ -74,6 +74,11 @@ struct FrameHeaderBase
                            //   8 - jpeg 80%;
                            //   9 - jpeg 90%;
                            //  10 - jpeg 100%  (без сжатия, формат jpeg);
+
+    bool frameOrigin = {true}; // Признак определяет из какого поля видеоданных
+                               // формируется видеопоток.
+                               // Значение TRUE соответствует полю video::Frame::origin,
+                               // значение FALSE соответствует video::Frame::data
 };
 
 } // namespace video::transport

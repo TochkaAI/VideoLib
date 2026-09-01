@@ -55,7 +55,7 @@ namespace video::transport::tcp {
 using namespace std;
 
 bool Sender::init(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
-                  pproto::SizeSide sizeSide, VideoFrameCompression compression)
+                  SizeSide sizeSide, VideoFrameCompression compression, bool frameOrigin)
 {
     _deviceIndex = deviceIndex;
     _fps = fps;
@@ -63,6 +63,7 @@ bool Sender::init(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 siz
     _sizeScale = 0;
     _sizeSide = sizeSide;
     _compression = compression;
+    _frameOrigin = frameOrigin;
 
     { //Block for alog::Line
         alog::Line logLine = log_info_m
@@ -80,7 +81,8 @@ bool Sender::init(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 siz
         else
             logLine << ". Request frame scale: "  << int(frameScale) << "%";
 
-        logLine     << ". Compression: "  << toString(compression);
+        logLine     << ". Compression: " << toString(compression);
+        logLine     << ". FrameOrigin: " << frameOrigin;
     }
 
     if (sizeScale)
@@ -104,7 +106,7 @@ bool Sender::isFit(quint8 deviceIndex) const
 }
 
 bool Sender::isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
-                   VideoFrameCompression compression) const
+                   VideoFrameCompression compression, bool frameOrigin) const
 {
     if (sizeScale && _sizeScale)
     {
@@ -121,14 +123,16 @@ bool Sender::isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 si
         return (_deviceIndex == deviceIndex
                 && _fps == fps
                 && _sizeScale == sizeScale
-                && _compression == compression);
+                && _compression == compression
+                && _frameOrigin == frameOrigin);
     }
     if (!sizeScale && !_sizeScale)
     {
         return (_deviceIndex == deviceIndex
                 && _fps == fps
                 && _frameScale == frameScale
-                && _compression == compression);
+                && _compression == compression
+                && _frameOrigin == frameOrigin);
     }
     return false;
 }
@@ -293,7 +297,9 @@ void Sender::run()
             continue;
         }
 
-        auto sendVideoStreamInfo = [this, &frame](Terminal* terminal)
+        const Mat& frameData = (_frameOrigin) ? frame->origin : frame->data;
+
+        auto sendVideoStreamInfo = [this, &frame, &frameData](Terminal* terminal)
         {
             data::VideoStreamInfo videoStreamInfo;
             videoStreamInfo.deviceIndex = _deviceIndex;
@@ -305,6 +311,7 @@ void Sender::run()
             videoStreamInfo.scaleHeight = frame->height; //
             videoStreamInfo.fps         = _fps;
             videoStreamInfo.realFps     = frame->fps;
+            videoStreamInfo.frameOrigin = _frameOrigin;
 
             if (_sizeScale)
             {
@@ -345,8 +352,8 @@ void Sender::run()
 //            else
 //                log_info_m << "Real send frame scale: " << videoStreamInfo.scale << "%";
 
-            if (!frame->data.empty())
-                videoStreamInfo.cvType = frame->data.type();
+            if (!frameData.empty())
+                videoStreamInfo.cvType = frameData.type();
 
             Message::Ptr m = createMessage(videoStreamInfo,
                                            {terminal->messageContentFormat});
@@ -366,8 +373,8 @@ void Sender::run()
             _terminalsChanged = false;
         }
 
-        // Пустая data - признак начала нового видеопотока
-        if (frame->data.empty())
+        // Пустое изображение - признак начала нового видеопотока
+        if (frame->origin.empty())
         {
             for (Terminal* t : terminals)
             {
@@ -396,16 +403,17 @@ void Sender::run()
         data::FrameHeader frameHeader;
         frameHeader.deviceIndex = _deviceIndex;
         frameHeader.frameNumber = frame->number;
-        frameHeader.cvType      = frame->data.type();
+        frameHeader.cvType      = frameData.type();
         frameHeader.realWidth   = frame->width;
         frameHeader.realHeight  = frame->height;
-        frameHeader.realStep    = frame->data.step;
+        frameHeader.realStep    = frameData.step;
         frameHeader.scale       = _frameScale;
-        frameHeader.scaleWidth  = frame->width;     // будет переопределено ниже
-        frameHeader.scaleHeight = frame->height;    //
-        frameHeader.scaleStep   = frame->data.step; //
+        frameHeader.scaleWidth  = frame->width;   // будет переопределено ниже
+        frameHeader.scaleHeight = frame->height;  //
+        frameHeader.scaleStep   = frameData.step; //
         frameHeader.fps         = _fps;
         frameHeader.realFps     = frame->fps;
+        frameHeader.frameOrigin = _frameOrigin;
 
         cv::Mat resizeFrame;
 
@@ -436,12 +444,12 @@ void Sender::run()
             frameHeader.scale = 100;
             frameHeader.scaleWidth  = frame->width;
             frameHeader.scaleHeight = frame->height;
-            resizeFrame = frame->data;
+            resizeFrame = frameData;
         }
         else
         {
             cv::Size size {frameHeader.scaleWidth, frameHeader.scaleHeight};
-            cv::resize(frame->data, resizeFrame, size);
+            cv::resize(frameData, resizeFrame, size);
             frameHeader.scaleStep = resizeFrame.step;
         }
 
@@ -557,7 +565,7 @@ void Sender::run()
         int64_t elapsedTime = sendTimer.elapsed<std::chrono::microseconds>();
         int64_t sleepInterval = sendInterval - elapsedTime;
         if (sleepInterval > 0)
-            usleep(sleepInterval);
+            QThread::usleep(sleepInterval);
             //this_thread::sleep_for(chrono::microseconds(sleepInterval));
 
     } // while (true)
@@ -625,7 +633,8 @@ void SendPool::message(const pproto::Message::Ptr& message)
                               videoSenderStart.fps,
                               videoSenderStart.frameScale,
                               videoSenderStart.sizeScale,
-                              videoSenderStart.compression))
+                              videoSenderStart.compression,
+                              videoSenderStart.frameOrigin))
             {
                 found = true;
                 pproto::transport::base::Socket::Ptr socket =
@@ -646,7 +655,8 @@ void SendPool::message(const pproto::Message::Ptr& message)
                          videoSenderStart.frameScale,
                          videoSenderStart.sizeScale,
                          videoSenderStart.sizeSide,
-                         videoSenderStart.compression);
+                         videoSenderStart.compression,
+                         videoSenderStart.frameOrigin);
 
             { //Block for alog::Line
                 alog::Line logLine = log_verbose_m

@@ -52,7 +52,9 @@ enum class CaptureMode : quint32
     GRAY = 3
 };
 
-// Координаты камеры
+/**
+  Координаты камеры
+*/
 struct Coordinates : clife_base
 {
     typedef clife_ptr<Coordinates> Ptr;

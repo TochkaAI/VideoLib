@@ -62,11 +62,11 @@ class Sender : public QThreadEx
 private:
     Sender(SendPool* sendPool) : _sendPool(sendPool) {}
     bool init(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
-              pproto::SizeSide sizeSide, VideoFrameCompression compression);
+              SizeSide sizeSide, VideoFrameCompression compression, bool frameOrigin);
 
     bool isFit(quint8 deviceIndex) const;
     bool isFit(quint8 deviceIndex, quint8 fps, quint8 frameScale, quint16 sizeScale,
-               VideoFrameCompression compression) const;
+               VideoFrameCompression compression, bool frameOrigin) const;
 
     void addTerminal(pproto::transport::base::Socket::Ptr,
                      SerializeFormat messageContentFormat);
@@ -92,14 +92,19 @@ private:
 
     // Пять следующих параметра устанавливаются в функции init() и более
     // не меняются
-    quint8  _deviceIndex = {0};
-    quint8  _fps = {25};
-    quint8  _frameScale = {100};
-    quint16 _sizeScale = {0};
-    pproto::SizeSide _sizeSide = {pproto::SizeSide::Width};
+    quint8   _deviceIndex = {0};
+    quint8   _fps         = {25};
+    quint8   _frameScale  = {100};
+    quint16  _sizeScale   = {0};
+    SizeSide _sizeSide    = {SizeSide::Width};
 
     // Признак сжатия кадра
     VideoFrameCompression _compression = {VideoFrameCompression::None};
+
+    // Признак определяет из какого поля видеоданных будет формироваться видео-
+    // поток. Значение TRUE соответствует полю video::Frame::origin,  значение
+    // FALSE соответствует video::Frame::data
+    bool _frameOrigin = {true};
 
     struct Terminal : clife_base
     {
