@@ -31,7 +31,6 @@
 #include "transport/frames/base.h"
 
 #include "pproto/commands/base.h"
-#include "pproto/serialize/qbinary.h"
 
 namespace pproto {
 namespace command {

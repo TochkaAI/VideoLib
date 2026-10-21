@@ -32,7 +32,7 @@
 #pragma once
 
 #include "video_frame.h"
-#include "transport/commands.h"
+#include "commands/transport.h"
 
 #include "shared/list.h"
 #include "shared/defmac.h"

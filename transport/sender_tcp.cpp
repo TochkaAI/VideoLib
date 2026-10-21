@@ -25,7 +25,7 @@
 
 *****************************************************************************/
 
-#include "sender_tcp.h"
+#include "transport/sender_tcp.h"
 
 #include "shared/break_point.h"
 #include "shared/prog_abort.h"

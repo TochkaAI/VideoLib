@@ -25,7 +25,7 @@
 
 *****************************************************************************/
 
-#include "commands.h"
+#include "commands/transport.h"
 #include "pproto/commands/pool.h"
 
 namespace pproto {
@@ -50,6 +50,8 @@ REGISTRY_COMMAND_MULTIPROC(VideoSenderFrame,  "2cb8b7dc-4917-4d8e-8873-78a633ebd
 } // namespace command
 
 namespace data {
+
+#ifdef PPROTO_QBINARY_SERIALIZE
 
 void VideoSenderStart::toRaw(bserial::DataStream& stream) const
 {
@@ -202,5 +204,8 @@ void VideoSenderFrame::fromRaw(const bserial::RawVector& vect)
     stream >> data;
     B_DESERIALIZE_END
 }
+
+#endif // PPROTO_QBINARY_SERIALIZE
+
 } // namespace data
 } // namespace pproto
