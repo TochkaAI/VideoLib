@@ -116,8 +116,6 @@ template<typename U, bool RO = false> struct Param : clife_base
     Param () = default;
     DISABLE_DEFAULT_COPY(Param)
 
-    Status status = {Status::Unknown};
-
     // В режиме Mode::Set поле должно содержать новое (присваиваемое)
     // значение.
     // В режиме Mode::Get поле содержит текущее значение камеры
@@ -126,6 +124,9 @@ template<typename U, bool RO = false> struct Param : clife_base
     // В режиме Mode::Set поле содержит предыдущее значение камеры.
     // В режиме Mode::Get поле не используется
     U preValue = U{};
+
+    // Статус присвоения/получения нового значения для параметра
+    Status status = {Status::Unknown};
 
     // Информация о перечисляемом типе
     EnumInfo::Ptr enumInfo;
@@ -166,9 +167,9 @@ template<typename U, bool RO = false> struct Param : clife_base
 
 #ifdef PPROTO_JSON_SERIALIZE
     J_SERIALIZE_BEGIN
-        J_SERIALIZE_MAP_ITEM( "status"    , status   )
         J_SERIALIZE_MAP_ITEM( "value"     , value    )
-        J_SERIALIZE_MAP_ITEM( "pre_value" , preValue )
+        J_SERIALIZE_MAP_OPT ( "pre_value" , preValue )
+        J_SERIALIZE_MAP_OPT ( "status"    , status   )
         J_SERIALIZE_MAP_OPT ( "enum_info" , enumInfo )
     J_SERIALIZE_END
 #endif
