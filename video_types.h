@@ -29,7 +29,9 @@
 
 #include "shared/clife_base.h"
 #include "shared/clife_ptr.h"
+
 #include <QtGlobal>
+#include <vector>
 
 namespace video {
 
@@ -59,14 +61,18 @@ struct Coordinates : clife_base
 {
     typedef clife_ptr<Coordinates> Ptr;
 
-    double x  = {0}; // Координата по оси  X (в метрах)
-    double y  = {0}; // Координата по оси  Y (в метрах)
-    double z  = {0}; // Координата по оси  Z (в метрах)
-    double rx = {0}; // Поворот вокруг оси X (в радианах)
-    double ry = {0}; // Поворот вокруг оси Y (в радианах)
-    double rz = {0}; // Поворот вокруг оси Z (в радианах)
+    // Глобальные координаты TCP кобота. Формат: x, y, z, rx, ry, rz
+    std::vector<double> globalPose;
 
-    timespec time = {0, 0}; // Время получения координат (UTC)
+    // Признак наличия локальных координат для TCP кобота
+    bool localExists = {false};
+
+    // Локальные координаты TCP кобота в пользовательской системе координат.
+    // Формат: x, y, z, rx, ry, rz
+    std::vector<double> localPose;
+
+    // Время получения координат (UTC)
+    timespec time = {0, 0};
 };
 
 inline const char* toString(CaptureMode mode)
