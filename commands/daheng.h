@@ -38,7 +38,7 @@ namespace command {
 /**
   Команда возвращает/устанавливает параметры для камеры Daheng
 */
-extern const QUuidEx DahengSettings;
+DECLARE_PPROTO_COMMAND(DahengSettings)
 
 } // namespace command
 

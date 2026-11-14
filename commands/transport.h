@@ -40,23 +40,23 @@ namespace command {
 /**
   Команда информирует о том, что сокет используется для передачи видеопотока
 */
-extern const QUuidEx VideoSenderSocket;
+DECLARE_PPROTO_COMMAND(VideoSenderSocket)
 
 /**
   Старт передачи видеопотока
 */
-extern const QUuidEx VideoSenderStart;
+DECLARE_PPROTO_COMMAND(VideoSenderStart)
 
 /**
   Остановка передачи видеопотока
 */
-extern const QUuidEx VideoSenderStop;
+DECLARE_PPROTO_COMMAND(VideoSenderStop)
 
 /**
   Команда содержит информацию о геометрии видеопотока, рассылается в момент
   начала нового видеопотока или при подключении терминала
 */
-extern const QUuidEx VideoStreamInfo;
+DECLARE_PPROTO_COMMAND(VideoStreamInfo)
 
 /**
   Команда возвращает номер порта необходимый для работы механизма обратной
@@ -64,12 +64,12 @@ extern const QUuidEx VideoStreamInfo;
   должен быть получен до вызова команды VideoSenderStart. Номер порта пере-
   дается в нулевом индексе поля tag коммуникационного сообщения
 */
-extern const QUuidEx VideoFeedbackPort;
+DECLARE_PPROTO_COMMAND(VideoFeedbackPort)
 
 /**
   Команда для отправки кадра
 */
-extern const QUuidEx VideoSenderFrame;
+DECLARE_PPROTO_COMMAND(VideoSenderFrame)
 
 } // namespace command
 
