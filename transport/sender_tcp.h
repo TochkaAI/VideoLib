@@ -77,8 +77,8 @@ private:
     bool terminalsIsEmpty() const;
 
     void setFrame(const video::Frame::Ptr&);
-
     bool frameAnswerReceived(const QUuidEx&);
+    bool frameOrigin() const {return _frameOrigin;}
 
 private:
     DISABLE_DEFAULT_FUNC(Sender)
@@ -119,7 +119,7 @@ private:
         // // quint64 id;
 
         // Признак только что добавленного терминала
-        volatile bool isNew = {true};
+        std::atomic_bool isNew = {true};
 
         pproto::transport::base::Socket::Ptr socket;
         SocketDescriptor socketDescriptor = {-1};
@@ -132,8 +132,8 @@ private:
         QMutex  answerIdLock;
     };
 
+    bool _terminalsChanged;
     Terminal::List _terminals;
-    volatile bool  _terminalsChanged;
     mutable QMutex _terminalsLock;
 
     Frame::Ptr _frame;
@@ -158,6 +158,9 @@ public slots:
     void setFrame(const video::Frame::Ptr&);
     bool terminalsIsEmpty() const;
 
+    bool originFramesRequired() const;
+    bool datamodFramesRequired() const;
+
 private:
     Q_OBJECT
     DISABLE_DEFAULT_COPY(SendPool)
@@ -166,6 +169,9 @@ private:
     lst::List<Sender> _senders;
 
     pproto::transport::tcp::Listener* _listener = {nullptr};
+
+    std::atomic_bool _originFramesRequired = {true};
+    std::atomic_bool _datamodFramesRequired = {false};
 
     friend class Sender;
     template<typename T, int> friend T& safe::singleton();

@@ -360,17 +360,18 @@ void Sender::run()
             terminal->socket->send(m);
         };
 
-        if (_terminalsChanged)
-        {
+        { //Block for QMutexLocker
             QMutexLocker locker {&_terminalsLock}; (void) locker;
-
-            terminals.clear();
-            for (Terminal* t : _terminals)
+            if (_terminalsChanged)
             {
-                t->add_ref();
-                terminals.add(t);
+                terminals.clear();
+                for (Terminal* t : _terminals)
+                {
+                    t->add_ref();
+                    terminals.add(t);
+                }
+                _terminalsChanged = false;
             }
-            _terminalsChanged = false;
         }
 
         // Пустое изображение - признак начала нового видеопотока
@@ -391,7 +392,7 @@ void Sender::run()
         }
 
         for (Terminal* t : terminals)
-            if (t->isNew)
+            if (t->isNew.load(std::memory_order_relaxed))
             {
                 t->isNew = false;
                 sendVideoStreamInfo(t);
@@ -621,6 +622,35 @@ void SendPool::message(const pproto::Message::Ptr& message)
     if (message->processed())
         return;
 
+    auto updateFramesRequired = [this]()
+    {
+        _originFramesRequired = false;
+        for (Sender* sender : _senders)
+        {
+            if (sender->terminalsIsEmpty())
+                continue;
+
+            if (sender->frameOrigin())
+            {
+                _originFramesRequired = true;
+                break;
+            }
+        }
+
+        _datamodFramesRequired = false;
+        for (Sender* sender : _senders)
+        {
+            if (sender->terminalsIsEmpty())
+                continue;
+
+            if (!sender->frameOrigin())
+            {
+                _datamodFramesRequired = true;
+                break;
+            }
+        }
+    };
+
     if (message->command() == command::VideoSenderStart)
     {
         data::VideoSenderStart videoSenderStart;
@@ -699,6 +729,8 @@ void SendPool::message(const pproto::Message::Ptr& message)
             _senders.add(sender);
         }
 
+        updateFramesRequired();
+
         Message::Ptr answer = message->cloneForAnswer();
         _listener->send(answer);
     }
@@ -720,6 +752,8 @@ void SendPool::message(const pproto::Message::Ptr& message)
                     }
             }
 
+        updateFramesRequired();
+
         Message::Ptr answer = message->cloneForAnswer();
         writeToMessage(videoSenderStop, answer, message->contentFormat());
         _listener->send(answer);
@@ -734,7 +768,8 @@ void SendPool::message(const pproto::Message::Ptr& message)
 }
 
 void SendPool::socketConnected(pproto::SocketDescriptor)
-{}
+{
+}
 
 void SendPool::socketDisconnected(pproto::SocketDescriptor socketDescriptor)
 {
@@ -764,6 +799,16 @@ bool SendPool::terminalsIsEmpty() const
             return false;
 
     return true;
+}
+
+bool SendPool::originFramesRequired() const
+{
+    return _originFramesRequired.load(std::memory_order_relaxed);
+}
+
+bool SendPool::datamodFramesRequired() const
+{
+    return _datamodFramesRequired.load(std::memory_order_relaxed);
 }
 
 SendPool& sendPool()
